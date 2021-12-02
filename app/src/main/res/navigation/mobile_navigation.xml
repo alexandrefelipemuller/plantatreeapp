@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="org.arboristasurbanos.treeplant.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_gallery"
+        android:name="org.arboristasurbanos.treeplant.ui.myforest.MyForestActivity"
+        android:label="@string/menu_forest"
+        tools:layout="@layout/activity_maps" />
+
+    <fragment
+        android:id="@+id/nav_slideshow"
+        android:name="org.arboristasurbanos.treeplant.ui.planting.PlantingFragment"
+        android:label="@string/menu_plant"
+        tools:layout="@layout/fragment_planting" />
+</navigation>

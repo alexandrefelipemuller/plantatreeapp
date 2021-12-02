@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TreePlant</string>
+    <string name="home_planted1">Parabéns, você já plantou %1$d árvores(s)!\n\nSua árvore mais antiga tem %2$s\n\nVocê já plantou %3$d árvores(s) este mês.</string>
+    <string name="title_activity_maps">Mapa</string>
+    <string name="menu_plant">Plantar uma muda</string>
+    <string name="menu_forest">Minha floresta</string>
+    <string name="menu_home">Home</string>
+    <string name="action_settings">Configurações</string>
+    <string name="nav_header_subtitle">Plante uma árvore hoje!</string>
+    <string name="nav_header_title">Plante uma árvore</string>
+    <string name="please_enter_plantation_details">Por favor preencha os detalhes do plantio</string>
+    <string name="home_trees_congrat">" árvores! Parabéns"</string>
+    <string name="species">Espécie:</string>
+    <string name="plantation_date">Data do plantio:</string>
+    <string name="click_marker_delete">Clique no marcador novamente para apagar</string>
+    <string name="home_planted_no_tree">Você não plantou nenhuma árvore ainda!</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="home_days">dias</string>
+</resources>
