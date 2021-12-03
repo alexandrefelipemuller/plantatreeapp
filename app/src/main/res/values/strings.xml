@@ -21,4 +21,9 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="home_days">days</string>
+    <string name="action_contact">Contact</string>
+    <string name="confirm_tree_delete">Confirm delete this tree?</string>
+    <string name="confirm_tree_update">Confirm to update the location of this tree?</string>
+    <string name="latitude">Latitude:</string>
+    <string name="longitude">Longitude:</string>
 </resources>

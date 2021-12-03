@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
@@ -29,23 +30,6 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
-        binding.appBarMain.fab.setOnClickListener { view ->
-            val mIntent = Intent(Intent.ACTION_SEND)
-            mIntent.data = Uri.parse("mailto:")
-            mIntent.type = "text/plain"
-            mIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf("alexandrefelipemuller@gmail.com"))
-            mIntent.putExtra(Intent.EXTRA_SUBJECT, "Planting a tree sugestion")
-            mIntent.putExtra(Intent.EXTRA_TEXT, "Bug description:\nNew feature suggestion:")
-            try {
-                //start email intent
-                startActivity(Intent.createChooser(mIntent, "Choose Email Client..."))
-            }
-            catch (e: Exception){
-                //if any thing goes wrong for example no email client application or any exception
-                //get and show exception message
-                Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
-            }
-        }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
@@ -64,6 +48,30 @@ class MainActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                val mIntent = Intent(Intent.ACTION_SEND)
+                mIntent.data = Uri.parse("mailto:")
+                mIntent.type = "text/plain"
+                mIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf("alexandrefelipemuller@gmail.com"))
+                mIntent.putExtra(Intent.EXTRA_SUBJECT, "Planting a tree sugestion")
+                mIntent.putExtra(Intent.EXTRA_TEXT, "Bug description:\nNew feature suggestion:")
+                try {
+                    //start email intent
+                    startActivity(Intent.createChooser(mIntent, "Choose Email Client..."))
+                }
+                catch (e: Exception){
+                    //if any thing goes wrong for example no email client application or any exception
+                    //get and show exception message
+                    Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

@@ -18,4 +18,9 @@
     <string name="yes">Sim</string>
     <string name="no">Não</string>
     <string name="home_days">dias</string>
+    <string name="action_contact">Contato</string>
+    <string name="confirm_tree_delete">Confirma que deseja apagar esta árvore?</string>
+    <string name="confirm_tree_update">Confirma atualização de localização dessa muda?</string>
+    <string name="longitude">Longitude:</string>
+    <string name="latitude">Latitude:</string>
 </resources>

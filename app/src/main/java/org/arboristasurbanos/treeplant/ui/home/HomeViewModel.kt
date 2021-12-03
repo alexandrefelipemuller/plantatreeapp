@@ -4,8 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.MainScope
 import org.arboristasurbanos.treeplant.R
 import org.arboristasurbanos.treeplant.database.DatabaseHandler
 import org.arboristasurbanos.treeplant.model.TreeModelClass
@@ -22,7 +20,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadTrees(): String? {
         val context = getApplication<Application>().applicationContext
         val databaseHandler: DatabaseHandler = DatabaseHandler(context)
-        val trees: List<TreeModelClass> = databaseHandler.viewTree()
+        val trees: List<TreeModelClass> = databaseHandler.viewTrees()
         val num = trees.count()
 
         val sdf = SimpleDateFormat("dd/MM/yyyy")
