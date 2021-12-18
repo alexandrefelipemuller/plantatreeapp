@@ -8,20 +8,13 @@ class TreeModelClass {
         return this.Long!!
     }
 
-    constructor(Id: Int?, Name: String, Date: String, Lat: Double, Long: Double){
+    constructor(Id: Int? = null, Name: String, Date: String, Lat: Double? = null, Long: Double? = null){
         this.Id = Id
         this.Name = Name
         this.Date = Date
         this.Lat = Lat
         this.Long = Long
 
-    }
-
-    constructor(Name: String, Date: String, Lat: Double, Long: Double){
-        this.Name = Name
-        this.Date = Date
-        this.Lat = Lat
-        this.Long = Long
     }
 
     var Id: Int? = null

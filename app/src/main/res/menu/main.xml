@@ -6,4 +6,14 @@
         android:orderInCategory="100"
         android:title="@string/action_contact"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_export"
+        android:orderInCategory="101"
+        android:title="@string/action_export_data"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_import"
+        android:orderInCategory="102"
+        android:title="@string/action_import_data"
+        app:showAsAction="never" />
 </menu>

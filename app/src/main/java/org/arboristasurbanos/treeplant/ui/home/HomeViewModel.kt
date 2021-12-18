@@ -44,7 +44,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
     private fun friendlyDate(input: Long):String?{
         val context = getApplication<Application>().applicationContext
-        return (input/86400000).toString() + " " + context.getString(R.string.home_days)
+        var days = (input/86400000)
+        if (days > 360)
+            return (days).floorDiv(360).toString() + " " + context.getString(R.string.home_years)
+        else
+            return days.toString() + " " + context.getString(R.string.home_days)
     }
     val text: LiveData<String> = _text
 }

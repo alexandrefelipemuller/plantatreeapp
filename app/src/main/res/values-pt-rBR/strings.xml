@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TreePlant</string>
+    <string name="app_name">Plante uma árvore</string>
     <string name="home_planted1">Parabéns, você já plantou %1$d árvores(s)!\n\nSua árvore mais antiga tem %2$s\n\nVocê já plantou %3$d árvores(s) este mês.</string>
     <string name="title_activity_maps">Mapa</string>
     <string name="menu_plant">Plantar uma muda</string>
@@ -13,7 +13,7 @@
     <string name="home_trees_congrat">" árvores! Parabéns"</string>
     <string name="species">Espécie:</string>
     <string name="plantation_date">Data do plantio:</string>
-    <string name="click_marker_delete">Clique no marcador novamente para apagar</string>
+    <string name="click_marker_options">Clique no marcador novamente para ver mais opções</string>
     <string name="home_planted_no_tree">Você não plantou nenhuma árvore ainda!</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>
@@ -23,4 +23,19 @@
     <string name="confirm_tree_update">Confirma atualização de localização dessa muda?</string>
     <string name="longitude">Longitude:</string>
     <string name="latitude">Latitude:</string>
+    <string name="home_years">ano(s)</string>
+    <string name="submit">Submeter</string>
+    <string name="confirm_tree_options">Por favor selecione uma opção</string>
+    <string name="location_disable_message">Para editar a posição mova o marcador no mapa</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_navigate">Navegar para...</string>
+    <string name="action_alarm">Criar evento do calendário</string>
+    <string name="action_delete">Apagar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="prompt_title">Por favor preencha detalhes</string>
+    <string name="prompt_days_quantity">Em quantos dias você quer ser alertado?</string>
+    <string name="notif2">Tem se passado um tempo desde que você viu sua muda</string>
+    <string name="notif1"> precisa de atenção</string>
+    <string name="required_ino">Não foi possível criar árvore, informação obrigatória faltando</string>
+    <string name="action_export_data">Export database</string>
 </resources>

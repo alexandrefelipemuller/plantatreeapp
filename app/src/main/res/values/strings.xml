@@ -16,7 +16,7 @@
     <string name="home_trees_congrat">" trees! congratulations"</string>
     <string name="species">Species:</string>
     <string name="plantation_date">Plantation Date:</string>
-    <string name="click_marker_delete">Click on marker again to delete</string>
+    <string name="click_marker_options">Click on marker again to see the options</string>
     <string name="home_planted_no_tree">You have no trees in your app</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -26,4 +26,30 @@
     <string name="confirm_tree_update">Confirm to update the location of this tree?</string>
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>
+    <string name="home_years">year(s)</string>
+    <string name="submit">Submit</string>
+    <string name="confirm_tree_options">Please select one option</string>
+    <string name="channel_description" translatable="false">treeplant</string>
+    <string name="notif1"> needs your attention</string>
+    <string name="prompt_days_quantity">Please enter in how many days you want to create alert</string>
+    <string name="prompt_title">Please enter details</string>
+    <string name="cancel">Cancel</string>
+    <string name="location_disable_message">To edit location just drag marker on map</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_navigate">Navigate to it</string>
+    <string name="action_alarm">Create calendar entry</string>
+    <string name="notif2">It\'s been a long time since you visited one of your plants</string>
+    <string name="required_ino">Could not create tree, missing required information</string>
+    <string name="action_export_data">Export database</string>
+    <string name="action_import_data">Import database</string>
+    <string name="title_activity_tutorial">Tutorial</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 </resources>

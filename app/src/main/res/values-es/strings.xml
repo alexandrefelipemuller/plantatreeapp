@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Planta un árbol</string>
+    <string name="action_alarm">Criar evento de calendário</string>
+    <string name="action_navigate">Navegar hasta</string>
+    <string name="action_delete">Borrar</string>
+    <string name="action_edit">Editar</string>
+    <string name="location_disable_message">Para editar la ubicación, simplemente arrastre el marcador en el mapa</string>
+    <string name="cancel">Cancelar</string>
+    <string name="prompt_title">" Por favor ingrese los detalles"</string>
+    <string name="prompt_days_quantity">" Ingrese cuántos días desea crear la alerta"</string>
+    <string name="notif1">" necesita tu atención"</string>
+    <string name="notif2">ha pasado mucho tiempo desde que visitaste una de tus plantas</string>
+    <string name="menu_home">Inicio</string>
+    <string name="menu_forest">Mi bosque</string>
+    <string name="submit">Enviar</string>
+    <string name="home_years">año(s)</string>
+    <string name="latitude">Latitud:</string>
+    <string name="longitude">Longitud:</string>
+    <string name="confirm_tree_options">" por favor selecciona una opcion"</string>
+    <string name="confirm_tree_update">¿Confirmar para actualizar la ubicación de este árbol?</string>
+    <string name="confirm_tree_delete">¿Confirmar borrar este árbol?</string>
+    <string name="action_contact">Contacto</string>
+    <string name="home_days">días</string>
+    <string name="no">No</string>
+    <string name="yes">Sí</string>
+    <string name="home_planted_no_tree">" No tienes árboles en tu aplicación"</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="menu_plant">Planta un árbol</string>
+    <string name="title_activity_maps">Mapa</string>
+    <string name="home_planted1">¡Felicitaciones, ya ha plantado a  %1$d árbol (s)!\n\nTu árbol más antiguo tiene %2$s\n\nHas plantado %3$d árbol (s) este mes</string>
+    <string name="home_trees_congrat">Tu árbol más antiguo tiene% 2 $ s</string>
+    <string name="plantation_date">Fecha:</string>
+    <string name="species">Especie:</string>
+    <string name="click_marker_options">Haga clic en el marcador nuevamente para ver las opciones</string>
+    <string name="please_enter_plantation_details">Ingrese los detalles de la plantación</string>
+    <string name="required_ino">No se puede crear el árbol, falta la información requerida</string>
+    <string name="action_export_data">Export database</string>
+</resources>

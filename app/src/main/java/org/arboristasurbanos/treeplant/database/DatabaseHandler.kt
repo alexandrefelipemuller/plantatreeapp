@@ -118,8 +118,10 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         contentValues.put(KEY_ID, tree.Id)
         contentValues.put(KEY_NAME, tree.Name)
         contentValues.put(KEY_DATE,tree.Date )
-        contentValues.put(KEY_LOCLAT,tree.Lat )
-        contentValues.put(KEY_LOCLONG,tree.Long )
+        if (tree.Lat != null)
+            contentValues.put(KEY_LOCLAT,tree.Lat )
+        if (tree.Long != null)
+           contentValues.put(KEY_LOCLONG,tree.Long )
 
         // Updating Row
         val success = db.update(TABLE_CONTACTS, contentValues,"id="+tree.Id,null)

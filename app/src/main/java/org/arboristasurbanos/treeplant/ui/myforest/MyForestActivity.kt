@@ -1,13 +1,20 @@
 package org.arboristasurbanos.treeplant.ui.myforest
 
-import android.app.AlertDialog
+import android.app.*
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.CalendarContract
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.LocationCallback
@@ -23,6 +30,9 @@ import org.arboristasurbanos.treeplant.database.DatabaseHandler
 import org.arboristasurbanos.treeplant.databinding.ActivityMapsBinding
 import org.arboristasurbanos.treeplant.helper.locationServiceHelper
 import org.arboristasurbanos.treeplant.model.TreeModelClass
+import org.arboristasurbanos.treeplant.ui.planting.PlantingFragment
+import java.util.*
+
 
 class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMarkerDragListener {
 
@@ -45,6 +55,7 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.maps) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
         return root
     }
 
@@ -80,7 +91,7 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
                 MarkerOptions()
                     .position(treeLocation)
                     .title(tree.Name + " : " + tree.Date)
-                    .snippet(getString(R.string.click_marker_delete))
+                    .snippet(getString(R.string.click_marker_options))
                    .draggable(true)
             )
             treeMarker?.tag = tree.Id
@@ -119,25 +130,111 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
         clickCount++
         markerId?.let {
             if (lastClickedId == markerId) {
+                val options = arrayOf(getString(R.string.action_edit), getString(R.string.action_delete), getString(R.string.action_navigate),getString(R.string.action_alarm))
                 val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
-                builder.setMessage(getString(R.string.confirm_tree_delete))
-                    .setNegativeButton(getString(R.string.no),  DialogInterface.OnClickListener { dialog, id ->
-                        })
-                    .setPositiveButton(getString(R.string.yes),
-                        DialogInterface.OnClickListener { dialog, id ->
-                            val databaseHandler: DatabaseHandler = DatabaseHandler(this.requireContext())
-                            val dbReturn = databaseHandler.deleteTree(markerId)
-                            if (dbReturn) {
-                                startActivity(Intent.makeRestartActivityTask(this.requireActivity().intent?.component))
-                                if (DEBUG) {
-                                    Toast.makeText(
-                                        this.requireContext(),
-                                        "Deleted ${marker.title}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                builder.setTitle(getString(R.string.confirm_tree_options))
+                    .setItems(options, DialogInterface.OnClickListener { dialog, which ->
+                        when (which) {
+                            0 -> { //Edit
+                                var manager = this.activity?.getSupportFragmentManager()
+                                var transaction = manager?.beginTransaction()
+                                if (transaction != null) {
+                                    val bundle = Bundle()
+                                    var mFrag = PlantingFragment()
+                                    bundle.putInt(
+                                        "Id",
+                                        markerId
+                                    )
+                                    mFrag.setArguments(bundle)
+                                    transaction.replace(R.id.nav_host_fragment_content_main, mFrag)
+                                    transaction.commit()
                                 }
                             }
-                        })
+                            1 -> { //Delete
+                                val confirmBuilder: AlertDialog.Builder =
+                                    AlertDialog.Builder(this.requireContext())
+                                confirmBuilder.setMessage(getString(R.string.confirm_tree_delete))
+                                    .setNegativeButton(
+                                        getString(R.string.no),
+                                        DialogInterface.OnClickListener { dialog, id ->
+                                        })
+                                    .setPositiveButton(getString(R.string.yes),
+                                        DialogInterface.OnClickListener { dialog, id ->
+                                            val databaseHandler: DatabaseHandler =
+                                                DatabaseHandler(this.requireContext())
+                                            val dbReturn = databaseHandler.deleteTree(markerId)
+                                            if (dbReturn) {
+                                                startActivity(Intent.makeRestartActivityTask(this.requireActivity().intent?.component))
+                                                if (DEBUG) {
+                                                    Toast.makeText(
+                                                        this.requireContext(),
+                                                        "Deleted ${marker.title}",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
+                                        })
+                                confirmBuilder.show()
+                            }
+                            2 -> { //Navigate
+                                val lat = marker.position.latitude
+                                val lon = marker.position.longitude
+                                val uri = Uri.parse("geo:$lat,$lon?q=$lat,$lon")
+                                val intent = Intent(Intent.ACTION_VIEW, uri)
+                                intent.setPackage("com.google.android.apps.maps");
+                                requireContext().startActivity(intent)
+                            }
+                            3 -> { //Schedule
+                                val alert: AlertDialog.Builder = AlertDialog.Builder(context)
+                                alert.setTitle(getString(R.string.prompt_title))
+                                alert.setMessage(getString(R.string.prompt_days_quantity))
+                                val input = EditText(context)
+                                input.inputType = InputType.TYPE_CLASS_NUMBER
+                                input.hint = "10"
+                                input.setRawInputType(Configuration.KEYBOARD_12KEY)
+                                alert.setView(input)
+                                alert.setPositiveButton(
+                                    "Ok"
+                                ) { dialog, whichButton ->
+                                    var days = Integer.parseInt(input.text.toString()) * 86400000
+                                    var timeInMillis = (System.currentTimeMillis() + days)
+                                    var title = marker.title + " " + requireContext().getString(R.string.notif1)
+                                    var msg = requireContext().getString(R.string.notif2)
+                                    val intent = Intent(Intent.ACTION_INSERT)
+                                        .setData(CalendarContract.Events.CONTENT_URI)
+                                        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, timeInMillis)
+                                        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, timeInMillis+(300000))
+                                        .putExtra(CalendarContract.Events.TITLE, title)
+                                        .putExtra(CalendarContract.Events.DESCRIPTION, msg)
+                                        .putExtra(CalendarContract.Events.EVENT_LOCATION, marker.position.latitude.toString() + ", " + marker.position.longitude.toString())
+                                        .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
+                                    startActivity(intent)
+
+                                    /*
+                                    var alarmMgr = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                                    var alarmIntent = Intent(context, AlarmReceiver::class.java).let { intent ->
+                                        intent.putExtra("Id",markerId)
+                                        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+                                    }
+                                    var days = Integer.parseInt(input.text.toString()) * 86400000
+                                    val calendar: Calendar = Calendar.getInstance().apply {
+                                        timeInMillis = (System.currentTimeMillis() + days)
+                                    }
+                                    alarmMgr.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent)
+                                    */
+                                    Toast.makeText(
+                                        this.requireContext(),
+                                        "Alarm created with success",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                alert.setNegativeButton(getString(R.string.cancel),
+                                    DialogInterface.OnClickListener { dialog, whichButton ->
+                                    })
+                                alert.show()
+                            }
+                        }
+                    })
                 builder.show()
         }
         else
@@ -148,6 +245,7 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
         }
         return false
     }
+
 
     override fun onMarkerDrag(marker: Marker) {
     }
