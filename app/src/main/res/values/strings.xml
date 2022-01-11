@@ -12,7 +12,6 @@
     <string name="menu_plant">Plant a Tree</string>
     <string name="title_activity_maps">Map</string>
     <string name="home_planted1">Congratulations, you\'ve already planted %1$d tree(s)!\n\nYour oldest tree is %2$s old\n\nYou\'ve planted %3$d tree(s) this month</string>
-    <string name="please_enter_plantation_details">Please enter plantation details</string>
     <string name="home_trees_congrat">" trees! congratulations"</string>
     <string name="species">Species:</string>
     <string name="plantation_date">Plantation Date:</string>
@@ -43,10 +42,9 @@
     <string name="required_ino">Could not create tree, missing required information</string>
     <string name="action_export_data">Export database</string>
     <string name="action_import_data">Import database</string>
+    <string name="action_options">Options...</string>
     <string name="title_activity_tutorial">Tutorial</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 

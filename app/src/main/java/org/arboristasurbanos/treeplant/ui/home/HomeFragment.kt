@@ -1,5 +1,6 @@
 package org.arboristasurbanos.treeplant.ui.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import org.arboristasurbanos.treeplant.R
 import org.arboristasurbanos.treeplant.databinding.FragmentHomeBinding
+import org.arboristasurbanos.treeplant.ui.tutorial.Tutorial
 
 class HomeFragment : Fragment() {
 
@@ -35,6 +37,13 @@ class HomeFragment : Fragment() {
         homeViewModel.text.observe(viewLifecycleOwner, Observer {
             textView.text = it
         })
+
+
+        /*
+        var intent = Intent(this.context, Tutorial::class.java)
+        startActivity(intent)
+        */
+
         return root
     }
 

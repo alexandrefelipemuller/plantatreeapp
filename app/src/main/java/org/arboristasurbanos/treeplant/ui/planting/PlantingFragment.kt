@@ -2,11 +2,15 @@ package org.arboristasurbanos.treeplant.ui.planting
 
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.LocationCallback
@@ -26,6 +30,7 @@ class PlantingFragment : Fragment() {
     private lateinit var slideshowViewModel: PlantingViewModel
     private var _binding: FragmentPlantingBinding? = null
     private lateinit var locationServiceHelper: locationServiceHelper
+    private lateinit var imageBitmap : Bitmap
     enum class typeMode {
         NEW, EDIT
     }
@@ -54,8 +59,10 @@ class PlantingFragment : Fragment() {
             this.treeId = Id
             val databaseHandler: DatabaseHandler = DatabaseHandler(requireContext())
             var tree =  databaseHandler.viewTree(Id)
-            _binding!!.editTextPlantName.setText(tree!!.Name)
-            _binding!!.editTextDate.setText(tree!!.Date)
+            if (tree?.Name != null)
+                _binding!!.editTextPlantName.setText(tree!!.Name)
+            if (tree?.Date != null)
+                _binding!!.editTextDate.setText(tree!!.Date)
             _binding!!.editTextLat.hint = getString(R.string.location_disable_message)
             _binding!!.editTextLat.isEnabled = false
             _binding!!.editTextLong.hint = getString(R.string.location_disable_message)
@@ -78,40 +85,21 @@ class PlantingFragment : Fragment() {
         }
 
 
+        val addPhotoButton: ImageView = binding.addPhotoIcon
+        addPhotoButton.setOnClickListener {
+            val REQUEST_IMAGE_CAPTURE = 1
+            fun dispatchTakePictureIntent() {
+                Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+                    takePictureIntent.resolveActivity(requireContext().packageManager)?.also {
+                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+                    }
+                }
+            }
+            dispatchTakePictureIntent()
+        }
         val button: Button = binding.submitButton
         button.setOnClickListener {
-            var newTree: TreeModelClass
-            if (this.mode == typeMode.EDIT){
-                newTree = TreeModelClass(
-                    Id  = this.treeId,
-                    Name = _binding!!.editTextPlantName.text.toString(),
-                    Date = _binding!!.editTextDate.text.toString()
-                )
-                val databaseHandler: DatabaseHandler = DatabaseHandler(this.requireContext())
-                databaseHandler.updateTree(newTree)
-            }
-            else{
-                if (_binding!!.editTextLat.text.toString().isEmpty() || _binding!!.editTextLong.text.toString().isEmpty() || _binding!!.editTextDate.text.toString().isEmpty()){
-                    Snackbar.make(root, getString(R.string.required_ino), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
-                    return@setOnClickListener
-                }
-
-                newTree = TreeModelClass(
-                    Name = _binding!!.editTextPlantName.text.toString(),
-                    Date = _binding!!.editTextDate.text.toString(),
-                    Lat =_binding!!.editTextLat.text.toString().toDouble(),
-                    Long = _binding!!.editTextLong.text.toString().toDouble()
-                )
-                val databaseHandler: DatabaseHandler = DatabaseHandler(this.requireContext())
-                databaseHandler.addTree(newTree)
-            }
-            this.activity?.getSupportFragmentManager()?.popBackStack()
-            startActivity(Intent.makeRestartActivityTask(this.activity?.intent?.component))
-            view?.let { it1 ->
-                Snackbar.make(it1, "Tree create with success", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-            }
+            submit(root)
         }
         val sdf = SimpleDateFormat("dd/MM/yyyy")
         if (binding.editTextDate.text.isEmpty())
@@ -138,6 +126,42 @@ class PlantingFragment : Fragment() {
         return root
     }
 
+    fun submit(root: View) {
+        var newTree: TreeModelClass
+        if (this.mode == typeMode.EDIT){
+            newTree = TreeModelClass(
+                Id  = this.treeId,
+                Name = _binding!!.editTextPlantName.text.toString(),
+                Date = _binding!!.editTextDate.text.toString()
+            )
+            val databaseHandler: DatabaseHandler = DatabaseHandler(this.requireContext())
+            databaseHandler.updateTree(newTree)
+        }
+        else{
+            if (_binding!!.editTextLat.text.toString().isEmpty() || _binding!!.editTextLong.text.toString().isEmpty() || _binding!!.editTextDate.text.toString().isEmpty()){
+                Snackbar.make(root, getString(R.string.required_ino), Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+                return
+            }
+
+            newTree = TreeModelClass(
+                Name = _binding!!.editTextPlantName.text.toString(),
+                Date = _binding!!.editTextDate.text.toString(),
+                Lat =_binding!!.editTextLat.text.toString().toDouble(),
+                Long = _binding!!.editTextLong.text.toString().toDouble(),
+                Photo = this.imageBitmap
+            )
+            val databaseHandler: DatabaseHandler = DatabaseHandler(this.requireContext())
+            databaseHandler.addTree(newTree)
+        }
+        this.activity?.getSupportFragmentManager()?.popBackStack()
+        startActivity(Intent.makeRestartActivityTask(this.activity?.intent?.component))
+        view?.let { it1 ->
+            Snackbar.make(it1, "Tree create with success", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show()
+        }
+    }
+
     // Stop receiving location update when activity not visible/foreground
     override fun onPause() {
         super.onPause()
@@ -150,6 +174,15 @@ class PlantingFragment : Fragment() {
         super.onResume()
         if (this.mode == typeMode.NEW && ::locationServiceHelper.isInitialized)
             locationServiceHelper.startLocationUpdates()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val REQUEST_IMAGE_CAPTURE = 1
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == AppCompatActivity.RESULT_OK) {
+            imageBitmap = data?.extras?.get("data") as Bitmap
+            _binding?.addPhotoIcon?.setImageBitmap(imageBitmap)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
 }

@@ -1,43 +1,60 @@
 package org.arboristasurbanos.treeplant.database
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteOpenHelper
 import android.content.ContentValues
+import android.content.Context
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
+import android.database.sqlite.SQLiteOpenHelper
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import org.arboristasurbanos.treeplant.model.TreeModelClass
+import java.io.ByteArrayOutputStream
+
 
 class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DATABASE_VERSION) {
     companion object {
-        private val DATABASE_VERSION = 1
+        private val DATABASE_VERSION = 2
         private val DATABASE_NAME = "TreeDatabase"
-        private val TABLE_CONTACTS = "TreeTable"
+        private val TREES_TABLE = "TreeTable"
         private val KEY_ID = "id"
         private val KEY_NAME = "name"
         private val KEY_DATE = "date"
         private val KEY_LOCLAT = "lat"
         private val KEY_LOCLONG = "long"
+
+        private val PHOTO_TABLE = "TreePhoto"
+        private val KEY_TREE_ID = "treeid"
+        private val KEY_PHOTO = "photo"
     }
     override fun onCreate(db: SQLiteDatabase?) {
-        // TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         //creating table with fields
-        val CREATE_CONTACTS_TABLE = ("CREATE TABLE " + TABLE_CONTACTS + "("
+        val CREATE_CONTACTS_TABLE = ("CREATE TABLE " + TREES_TABLE + "("
                 + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_NAME + " TEXT,"
                 + KEY_DATE + " TEXT," + KEY_LOCLAT + " REAL, " + KEY_LOCLONG + " REAL)")
         db?.execSQL(CREATE_CONTACTS_TABLE)
+        CreatePhotoTable(db)
     }
-
+    fun CreatePhotoTable(db: SQLiteDatabase?){
+        val CREATE_PHOTO_TABLE = ("CREATE TABLE $PHOTO_TABLE ("
+                + "$KEY_ID INTEGER NOT NULL PRIMARY KEY, $KEY_TREE_ID INTEGER, $KEY_PHOTO BLOB, " +
+                "FOREIGN KEY ($KEY_TREE_ID) REFERENCES $TREES_TABLE($KEY_ID))")
+        db?.execSQL(CREATE_PHOTO_TABLE)
+    }
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        //  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        db!!.execSQL("DROP TABLE IF EXISTS " + TABLE_CONTACTS)
-        onCreate(db)
+        if (oldVersion == 1 && newVersion == 2){
+            CreatePhotoTable(db)
+        }
+        else {
+            db!!.execSQL("DROP TABLE IF EXISTS " + TREES_TABLE)
+            onCreate(db)
+        }
     }
 
 
     //method to insert data
-    fun addTree(tree: TreeModelClass):Long{
+    fun addTree(tree: TreeModelClass): Boolean {
         val db = this.writableDatabase
         val contentValues = ContentValues()
         contentValues.put(KEY_NAME, tree.Name)
@@ -45,16 +62,25 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         contentValues.put(KEY_LOCLAT, tree.Lat )
         contentValues.put(KEY_LOCLONG, tree.Long )
         // Inserting Row
-        val success = db.insert(TABLE_CONTACTS, null, contentValues)
-        //2nd argument is String containing nullColumnHack
+        val id = db.insert(TREES_TABLE, null, contentValues)
+        if (tree.Photo != null && id > 0){
+            val contentImgValue = ContentValues()
+            contentImgValue.put(KEY_TREE_ID, id)
+            val stream = ByteArrayOutputStream()
+            tree.Photo!!.compress(Bitmap.CompressFormat.PNG, 85, stream)
+            val byteArray: ByteArray = stream.toByteArray()
+            contentImgValue.put(KEY_PHOTO, byteArray)
+            db.insert(PHOTO_TABLE, null, contentImgValue)
+        }
+
         db.close() // Closing database connection
-        return success
+        return (id>0)
     }
     //method to read data
     @SuppressLint("Range")
     fun viewTrees():List<TreeModelClass>{
         val treeList:ArrayList<TreeModelClass> = ArrayList<TreeModelClass>()
-        val selectQuery = "SELECT  * FROM $TABLE_CONTACTS"
+        val selectQuery = "SELECT  * FROM $TREES_TABLE"
         val db = this.readableDatabase
         var cursor: Cursor? = null
         try{
@@ -85,7 +111,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
     @SuppressLint("Range")
     fun viewTree(id: Int): TreeModelClass? {
         val treeList:ArrayList<TreeModelClass> = ArrayList<TreeModelClass>()
-        val selectQuery = "SELECT  * FROM $TABLE_CONTACTS WHERE id="+id
+        val selectQuery = "SELECT * FROM $TREES_TABLE JOIN $PHOTO_TABLE ON $TREES_TABLE.$KEY_ID = $PHOTO_TABLE.$KEY_TREE_ID WHERE $TREES_TABLE.id="+id
         val db = this.readableDatabase
         var cursor: Cursor? = null
         try{
@@ -99,6 +125,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         var treeDate: String
         var treeLat: Double
         var treeLong: Double
+        var Photo: Bitmap
 
         if (cursor.moveToFirst()) {
             treeId = cursor.getInt(cursor.getColumnIndex(KEY_ID))
@@ -106,7 +133,10 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
             treeDate = cursor.getString(cursor.getColumnIndex(KEY_DATE))
             treeLat = cursor.getDouble(cursor.getColumnIndex(KEY_LOCLAT))
             treeLong = cursor.getDouble(cursor.getColumnIndex(KEY_LOCLONG))
-            val tree= TreeModelClass(Id = treeId, Name = treeName, Date = treeDate, Lat = treeLat, Long = treeLong)
+            var photoByteArray: ByteArray = cursor.getBlob(cursor.getColumnIndex(KEY_PHOTO))
+            Photo = BitmapFactory.decodeByteArray(photoByteArray,0,photoByteArray.size);
+
+            val tree= TreeModelClass(Id = treeId, Name = treeName, Date = treeDate, Lat = treeLat, Long = treeLong, Photo = Photo)
             return tree
         }
         return null
@@ -124,7 +154,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
            contentValues.put(KEY_LOCLONG,tree.Long )
 
         // Updating Row
-        val success = db.update(TABLE_CONTACTS, contentValues,"id="+tree.Id,null)
+        val success = db.update(TREES_TABLE, contentValues,"id="+tree.Id,null)
         //2nd argument is String containing nullColumnHack
         db.close() // Closing database connection
         return success
@@ -137,7 +167,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         contentValues.put(KEY_LOCLONG,Long)
 
         // Updating Row
-        val success = db.update(TABLE_CONTACTS, contentValues,"id="+id,null)
+        val success = db.update(TREES_TABLE, contentValues,"id="+id,null)
         //2nd argument is String containing nullColumnHack
         db.close() // Closing database connection
         return success
@@ -148,7 +178,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         val contentValues = ContentValues()
         contentValues.put(KEY_ID, Id)
         // Deleting Row
-        val success = db.delete(TABLE_CONTACTS,"id="+Id,null)
+        val success = db.delete(TREES_TABLE,"id="+Id,null)
         //2nd argument is String containing nullColumnHack
         db.close() // Closing database connection
         return (success>0)

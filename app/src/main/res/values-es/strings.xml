@@ -33,7 +33,6 @@
     <string name="plantation_date">Fecha:</string>
     <string name="species">Especie:</string>
     <string name="click_marker_options">Haga clic en el marcador nuevamente para ver las opciones</string>
-    <string name="please_enter_plantation_details">Ingrese los detalles de la plantación</string>
     <string name="required_ino">No se puede crear el árbol, falta la información requerida</string>
     <string name="action_export_data">Export database</string>
 </resources>

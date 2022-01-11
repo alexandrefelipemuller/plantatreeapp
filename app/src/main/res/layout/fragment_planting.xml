@@ -5,17 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTintMode="screen"
-    android:background="@color/design_default_color_background"
-    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@color/design_default_color_background" android:gravity="center"
     android:orientation="vertical"
     tools:context=".ui.planting.PlantingFragment">
 
-    <TextView
-        android:id="@+id/text_slideshow"
+    <ImageView
+        android:id="@+id/add_photo_icon"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48sp"
         android:layout_margin="0sp"
-        android:text="@string/please_enter_plantation_details"
+        android:src="@drawable/ic_add_photo_icon"
         android:textAlignment="center"
         android:textSize="20sp" />
 

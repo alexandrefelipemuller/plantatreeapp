@@ -1,13 +1,11 @@
 package org.arboristasurbanos.treeplant.ui.myforest
 
 import android.app.*
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
+import android.graphics.*
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.text.InputType
@@ -32,6 +30,13 @@ import org.arboristasurbanos.treeplant.helper.locationServiceHelper
 import org.arboristasurbanos.treeplant.model.TreeModelClass
 import org.arboristasurbanos.treeplant.ui.planting.PlantingFragment
 import java.util.*
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
+import com.google.android.gms.maps.model.Marker
+
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import androidx.core.content.ContextCompat
 
 
 class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMarkerDragListener {
@@ -61,12 +66,14 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
 
     override fun onResume() {
         super.onResume()
-        locationServiceHelper.startLocationUpdates()
+        if (::locationServiceHelper.isInitialized)
+            locationServiceHelper.startLocationUpdates()
     }
 
     override fun onPause() {
         super.onPause()
-        locationServiceHelper.stopLocationUpdates()
+        if (::locationServiceHelper.isInitialized)
+            locationServiceHelper.stopLocationUpdates()
     }
 
     /**
@@ -82,7 +89,16 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
         mMap = googleMap
         val databaseHandler: DatabaseHandler = DatabaseHandler(requireContext())
         val trees: List<TreeModelClass> = databaseHandler.viewTrees()
-        mMap = googleMap
+
+        val prefs: SharedPreferences = PreferenceManager
+            .getDefaultSharedPreferences(context)
+        var satImageType = prefs.getBoolean("SatImageType", true)
+        if (satImageType)
+            mMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
+        else
+            mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
+
+        mMap.setInfoWindowAdapter(CustomInfoWindowAdapter(requireContext()))
 
         for (tree in trees) {
             // Add a marker to tree and move the camera
@@ -92,11 +108,13 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
                     .position(treeLocation)
                     .title(tree.Name + " : " + tree.Date)
                     .snippet(getString(R.string.click_marker_options))
-                   .draggable(true)
+                    .draggable(true)
+                    .icon(bitmapDescriptorFromVector(R.drawable.ic_tree_map_marker))
             )
             treeMarker?.tag = tree.Id
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(treeLocation, 15.0f))
         }
+
         locationServiceHelper = locationServiceHelper(requireContext(), requireActivity())
         locationServiceHelper.internalLocationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
@@ -122,9 +140,18 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
         mMap.setOnMarkerClickListener(this)
         mMap.setOnMarkerDragListener(this)
     }
+
+    private fun bitmapDescriptorFromVector(vectorResId:Int):BitmapDescriptor {
+        var vectorDrawable = ContextCompat.getDrawable(requireContext(), vectorResId);
+        vectorDrawable!!.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+        var bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        var canvas =  Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
     /** Called when the user clicks a marker.  */
     override fun onMarkerClick(marker: Marker): Boolean {
-
         // Retrieve the data from the marker.
         val markerId = marker.tag as? Int
         clickCount++
