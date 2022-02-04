@@ -35,4 +35,7 @@
     <string name="click_marker_options">Haga clic en el marcador nuevamente para ver las opciones</string>
     <string name="required_ino">No se puede crear el árbol, falta la información requerida</string>
     <string name="action_export_data">Export database</string>
+    <string name="your_location">Your Location</string>
+    <string name="share">Compartir</string>
+    <string name="identify_plant">Identificar planta</string>
 </resources>

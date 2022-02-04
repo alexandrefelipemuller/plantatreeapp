@@ -48,7 +48,7 @@
         <!-- FileProvider -->
         <provider
             android:name=".helper.GenericFileProvider"
-            android:authorities="${applicationId}"
+            android:authorities="${applicationId}.helper.GenericFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -56,5 +56,10 @@
                 android:resource="@xml/provider_paths" />
         </provider>
     </application>
-
+    <queries>
+        <package android:name="org.plantnet" />
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+        </intent>
+    </queries>
 </manifest>

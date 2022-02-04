@@ -39,11 +39,6 @@ class HomeFragment : Fragment() {
         })
 
 
-        /*
-        var intent = Intent(this.context, Tutorial::class.java)
-        startActivity(intent)
-        */
-
         return root
     }
 

@@ -12,7 +12,7 @@
 
     <fragment
         android:id="@+id/nav_gallery"
-        android:name="org.arboristasurbanos.treeplant.ui.myforest.MyForestActivity"
+        android:name="org.arboristasurbanos.treeplant.ui.myforest.MyForestFragment"
         android:label="@string/menu_forest"
         tools:layout="@layout/activity_maps" />
 

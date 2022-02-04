@@ -9,13 +9,18 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.core.location.LocationRequestCompat
 import org.arboristasurbanos.treeplant.model.TreeModelClass
 import java.io.ByteArrayOutputStream
+import android.R.id
+
+
+
 
 
 class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,null,DATABASE_VERSION) {
     companion object {
-        private val DATABASE_VERSION = 2
+        private val DATABASE_VERSION =  2
         private val DATABASE_NAME = "TreeDatabase"
         private val TREES_TABLE = "TreeTable"
         private val KEY_ID = "id"
@@ -27,6 +32,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         private val PHOTO_TABLE = "TreePhoto"
         private val KEY_TREE_ID = "treeid"
         private val KEY_PHOTO = "photo"
+        private val QUALITY = 85
     }
     override fun onCreate(db: SQLiteDatabase?) {
         //creating table with fields
@@ -67,7 +73,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
             val contentImgValue = ContentValues()
             contentImgValue.put(KEY_TREE_ID, id)
             val stream = ByteArrayOutputStream()
-            tree.Photo!!.compress(Bitmap.CompressFormat.PNG, 85, stream)
+            tree.Photo!!.compress(Bitmap.CompressFormat.PNG, QUALITY, stream)
             val byteArray: ByteArray = stream.toByteArray()
             contentImgValue.put(KEY_PHOTO, byteArray)
             db.insert(PHOTO_TABLE, null, contentImgValue)
@@ -111,7 +117,7 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
     @SuppressLint("Range")
     fun viewTree(id: Int): TreeModelClass? {
         val treeList:ArrayList<TreeModelClass> = ArrayList<TreeModelClass>()
-        val selectQuery = "SELECT * FROM $TREES_TABLE JOIN $PHOTO_TABLE ON $TREES_TABLE.$KEY_ID = $PHOTO_TABLE.$KEY_TREE_ID WHERE $TREES_TABLE.id="+id
+        val selectQuery = "SELECT * FROM $TREES_TABLE LEFT JOIN $PHOTO_TABLE ON $TREES_TABLE.$KEY_ID = $PHOTO_TABLE.$KEY_TREE_ID WHERE $TREES_TABLE.id="+id
         val db = this.readableDatabase
         var cursor: Cursor? = null
         try{
@@ -126,17 +132,19 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         var treeLat: Double
         var treeLong: Double
         var Photo: Bitmap
-
         if (cursor.moveToFirst()) {
             treeId = cursor.getInt(cursor.getColumnIndex(KEY_ID))
             treeName = cursor.getString(cursor.getColumnIndex(KEY_NAME))
             treeDate = cursor.getString(cursor.getColumnIndex(KEY_DATE))
             treeLat = cursor.getDouble(cursor.getColumnIndex(KEY_LOCLAT))
             treeLong = cursor.getDouble(cursor.getColumnIndex(KEY_LOCLONG))
-            var photoByteArray: ByteArray = cursor.getBlob(cursor.getColumnIndex(KEY_PHOTO))
-            Photo = BitmapFactory.decodeByteArray(photoByteArray,0,photoByteArray.size);
+            var photoByteArray = cursor.getBlob(cursor.getColumnIndex(KEY_PHOTO))
 
-            val tree= TreeModelClass(Id = treeId, Name = treeName, Date = treeDate, Lat = treeLat, Long = treeLong, Photo = Photo)
+            var tree= TreeModelClass(Id = treeId, Name = treeName, Date = treeDate, Lat = treeLat, Long = treeLong)
+            if (photoByteArray != null) {
+                Photo = BitmapFactory.decodeByteArray(photoByteArray, 0, photoByteArray.size);  var tree= TreeModelClass(Id = treeId, Name = treeName, Date = treeDate, Lat = treeLat, Long = treeLong, Photo = Photo)
+                return TreeModelClass(Id = treeId, Name = treeName, Date = treeDate, Lat = treeLat, Long = treeLong, Photo = Photo)
+            }
             return tree
         }
         return null
@@ -147,11 +155,22 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         val contentValues = ContentValues()
         contentValues.put(KEY_ID, tree.Id)
         contentValues.put(KEY_NAME, tree.Name)
-        contentValues.put(KEY_DATE,tree.Date )
+        contentValues.put(KEY_DATE, tree.Date )
         if (tree.Lat != null)
             contentValues.put(KEY_LOCLAT,tree.Lat )
         if (tree.Long != null)
            contentValues.put(KEY_LOCLONG,tree.Long )
+        if (tree.Photo != null){
+            val photoValue = ContentValues()
+            val stream = ByteArrayOutputStream()
+            tree.Photo!!.compress(Bitmap.CompressFormat.PNG, QUALITY, stream)
+            val byteArray: ByteArray = stream.toByteArray()
+            photoValue.put(KEY_PHOTO, byteArray)
+            photoValue.put(KEY_TREE_ID, tree.Id!!)
+            // Updating Row
+            db.insertOrUpdate(PHOTO_TABLE, photoValue, tree.Id!!, KEY_TREE_ID)
+        }
+
 
         // Updating Row
         val success = db.update(TREES_TABLE, contentValues,"id="+tree.Id,null)
@@ -182,5 +201,17 @@ class DatabaseHandler(context: Context): SQLiteOpenHelper(context,DATABASE_NAME,
         //2nd argument is String containing nullColumnHack
         db.close() // Closing database connection
         return (success>0)
+    }
+}
+
+private fun SQLiteDatabase.insertOrUpdate(tableName: String, values: ContentValues, Id: Int?, keyId:  String) {
+
+    if (this.insertWithOnConflict(tableName, null, values, SQLiteDatabase.CONFLICT_IGNORE ).compareTo(-1) == 0 ) {
+        this.update(
+            tableName,
+            values,
+            keyId+"="+Id,
+            null
+        ) // number 1 is the _id here, update to variable for your code
     }
 }

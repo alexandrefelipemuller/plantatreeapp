@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.os.Looper
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
@@ -50,7 +51,7 @@ class locationServiceHelper {
         locationRequest.smallestDisplacement = 170f //170 m = 0.1 mile
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
+            override fun onLocationResult(locationResult: LocationResult) {
                 locationResult ?: return
                 if (locationResult.locations.isNotEmpty()) {
                     lat = locationResult.lastLocation.latitude
@@ -86,7 +87,7 @@ class locationServiceHelper {
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
-            null /* Looper */
+            Looper.getMainLooper()
         )
     }
 

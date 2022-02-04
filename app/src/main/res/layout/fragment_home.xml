@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTintMode="screen"
-    android:background="@color/design_default_color_background"
+    android:background="?attr/backgroundColor"
     tools:context=".ui.home.HomeFragment">
 
     <TextView

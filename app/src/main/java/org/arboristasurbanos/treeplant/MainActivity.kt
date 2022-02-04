@@ -11,8 +11,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -23,7 +21,6 @@ import com.google.android.material.navigation.NavigationView
 import org.arboristasurbanos.treeplant.database.DatabaseHandler
 import org.arboristasurbanos.treeplant.databinding.ActivityMainBinding
 import org.arboristasurbanos.treeplant.model.TreeModelClass
-import org.arboristasurbanos.treeplant.ui.planting.PlantingFragment
 import org.arboristasurbanos.treeplant.ui.settings.SettingsFragment
 import java.io.BufferedReader
 import java.io.File

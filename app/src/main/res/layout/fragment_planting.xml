@@ -7,7 +7,7 @@
     android:backgroundTintMode="screen"
     android:clickable="true"
     android:focusable="true"
-    android:background="@color/design_default_color_background" android:gravity="center"
+    android:background="?attr/backgroundColor" android:gravity="center"
     android:orientation="vertical"
     tools:context=".ui.planting.PlantingFragment">
 

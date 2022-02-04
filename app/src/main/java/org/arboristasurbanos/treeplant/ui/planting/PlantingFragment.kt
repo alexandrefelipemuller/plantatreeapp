@@ -1,6 +1,7 @@
 package org.arboristasurbanos.treeplant.ui.planting
 
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -15,9 +16,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.snackbar.Snackbar
-import org.arboristasurbanos.treeplant.R
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.ktx.Firebase
 import org.arboristasurbanos.treeplant.database.DatabaseHandler
 import org.arboristasurbanos.treeplant.databinding.FragmentPlantingBinding
 import org.arboristasurbanos.treeplant.helper.locationServiceHelper
@@ -25,12 +28,26 @@ import org.arboristasurbanos.treeplant.model.TreeModelClass
 import java.text.SimpleDateFormat
 import java.util.*
 
+import android.net.Uri
+import org.arboristasurbanos.treeplant.R
+import android.widget.Toast
+
+import androidx.core.content.FileProvider
+import org.arboristasurbanos.treeplant.helper.Sharing
+import java.io.File
+import java.io.FileOutputStream
+import java.lang.Exception
+
 
 class PlantingFragment : Fragment() {
     private lateinit var slideshowViewModel: PlantingViewModel
     private var _binding: FragmentPlantingBinding? = null
     private lateinit var locationServiceHelper: locationServiceHelper
-    private lateinit var imageBitmap : Bitmap
+    private var imageBitmap : Bitmap? = null
+    private lateinit var mContext: Context
+
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
     enum class typeMode {
         NEW, EDIT
     }
@@ -46,6 +63,7 @@ class PlantingFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        mContext = requireContext()
         slideshowViewModel =
             ViewModelProvider(this).get(PlantingViewModel::class.java)
 
@@ -63,6 +81,9 @@ class PlantingFragment : Fragment() {
                 _binding!!.editTextPlantName.setText(tree!!.Name)
             if (tree?.Date != null)
                 _binding!!.editTextDate.setText(tree!!.Date)
+            if (tree?.Photo != null)
+                _binding!!.addPhotoIcon.setImageBitmap(tree!!.Photo)
+
             _binding!!.editTextLat.hint = getString(R.string.location_disable_message)
             _binding!!.editTextLat.isEnabled = false
             _binding!!.editTextLong.hint = getString(R.string.location_disable_message)
@@ -72,7 +93,7 @@ class PlantingFragment : Fragment() {
         locationServiceHelper = locationServiceHelper(this.requireContext(), requireActivity())
         if (this.mode == typeMode.NEW) {
             locationServiceHelper.internalLocationCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult?) {
+                override fun onLocationResult(locationResult: LocationResult    ) {
                     if (binding.editTextLat.text.isEmpty()) {
                         binding.editTextLat.setText(locationServiceHelper.lat.toString())
                     }
@@ -123,6 +144,11 @@ class PlantingFragment : Fragment() {
             }
         }
 
+        firebaseAnalytics = Firebase.analytics
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
+            param(FirebaseAnalytics.Param.SCREEN_NAME, "PlantingFragment")
+            param(FirebaseAnalytics.Param.SCREEN_CLASS, "MainActivity")
+        }
         return root
     }
 
@@ -132,7 +158,8 @@ class PlantingFragment : Fragment() {
             newTree = TreeModelClass(
                 Id  = this.treeId,
                 Name = _binding!!.editTextPlantName.text.toString(),
-                Date = _binding!!.editTextDate.text.toString()
+                Date = _binding!!.editTextDate.text.toString(),
+                Photo = this.imageBitmap
             )
             val databaseHandler: DatabaseHandler = DatabaseHandler(this.requireContext())
             databaseHandler.updateTree(newTree)
@@ -155,10 +182,18 @@ class PlantingFragment : Fragment() {
             databaseHandler.addTree(newTree)
         }
         this.activity?.getSupportFragmentManager()?.popBackStack()
-        startActivity(Intent.makeRestartActivityTask(this.activity?.intent?.component))
+       // startActivity(Intent.makeRestartActivityTask(this.activity?.intent?.component))
+
+        class shareListener : View.OnClickListener {
+            override fun onClick(v: View) {
+                Sharing().shareImageandText(newTree, mContext)
+            }
+        }
+
         view?.let { it1 ->
-            Snackbar.make(it1, "Tree create with success", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            val mySnackbar = Snackbar.make(it1, "Tree create with success", Snackbar.LENGTH_LONG)
+            mySnackbar.setAction("SHARE", shareListener())
+            mySnackbar.show()
         }
     }
 

@@ -37,4 +37,7 @@
     <string name="notif1"> precisa de atenção</string>
     <string name="required_ino">Não foi possível criar árvore, informação obrigatória faltando</string>
     <string name="action_export_data">Export database</string>
+    <string name="your_location">Your Location</string>
+    <string name="share">Compartilhar</string>
+    <string name="identify_plant">Identificar planta</string>
 </resources>

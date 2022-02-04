@@ -3,6 +3,7 @@ package org.arboristasurbanos.treeplant.ui.myforest
 import android.app.*
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.*
 import android.net.Uri
@@ -14,7 +15,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -22,29 +25,29 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.ktx.Firebase
 import org.arboristasurbanos.treeplant.BuildConfig.DEBUG
 import org.arboristasurbanos.treeplant.R
 import org.arboristasurbanos.treeplant.database.DatabaseHandler
 import org.arboristasurbanos.treeplant.databinding.ActivityMapsBinding
+import org.arboristasurbanos.treeplant.helper.Sharing
 import org.arboristasurbanos.treeplant.helper.locationServiceHelper
 import org.arboristasurbanos.treeplant.model.TreeModelClass
 import org.arboristasurbanos.treeplant.ui.planting.PlantingFragment
 import java.util.*
-import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
-import com.google.android.gms.maps.model.Marker
-
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import androidx.core.content.ContextCompat
 
 
-class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMarkerDragListener {
+class MyForestFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMarkerDragListener {
 
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
     private lateinit var locationServiceHelper: locationServiceHelper
-    private var clickCount = 0
+
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
     private var lastClickedId = -1
 
     override fun onCreateView(
@@ -61,6 +64,11 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
             .findFragmentById(R.id.maps) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        firebaseAnalytics = Firebase.analytics
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
+                param(FirebaseAnalytics.Param.SCREEN_NAME, "MyForestFragment")
+                param(FirebaseAnalytics.Param.SCREEN_CLASS, "MainActivity")
+            }
         return root
     }
 
@@ -106,7 +114,7 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
             val treeMarker = mMap.addMarker(
                 MarkerOptions()
                     .position(treeLocation)
-                    .title(tree.Name + " : " + tree.Date)
+                    .title(tree.Name)
                     .snippet(getString(R.string.click_marker_options))
                     .draggable(true)
                     .icon(bitmapDescriptorFromVector(R.drawable.ic_tree_map_marker))
@@ -117,21 +125,18 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
 
         locationServiceHelper = locationServiceHelper(requireContext(), requireActivity())
         locationServiceHelper.internalLocationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                val circleOptions = CircleOptions()
-                    .center(
-                        LatLng(
+            override fun onLocationResult(locationResult: LocationResult) {
+                val userLocation = mMap.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(
                             locationServiceHelper.lat,
                             locationServiceHelper.long
-                        )
-                    )
-                    .radius(20.0) // radius in meters
-                    .fillColor(0x8800CCFF.toInt()) //this is a half transparent blue, change "88" for the transparency
-                    .strokeColor(Color.BLUE) //The stroke (border) is blue
-                    .strokeWidth(10F) // The width is in pixel, so try it!
-
-                // Get back the mutable Circle
-                mMap.addCircle(circleOptions)
+                        ))
+                        .draggable(false)
+                        .icon(bitmapDescriptorFromVector(R.drawable.ic_bluemarker))
+                        .title(getString(R.string.your_location))
+                )
+                userLocation?.tag = -1
             }
         }
         locationServiceHelper.checkLocation()
@@ -154,10 +159,9 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
     override fun onMarkerClick(marker: Marker): Boolean {
         // Retrieve the data from the marker.
         val markerId = marker.tag as? Int
-        clickCount++
         markerId?.let {
-            if (lastClickedId == markerId) {
-                val options = arrayOf(getString(R.string.action_edit), getString(R.string.action_delete), getString(R.string.action_navigate),getString(R.string.action_alarm))
+            if (lastClickedId == markerId && markerId != -1) {
+                val options = arrayOf(getString(R.string.action_edit), getString(R.string.action_delete), getString(R.string.action_navigate),getString(R.string.action_alarm), getString(R.string.share), getString(R.string.identify_plant))
                 val builder: AlertDialog.Builder = AlertDialog.Builder(this.requireContext())
                 builder.setTitle(getString(R.string.confirm_tree_options))
                     .setItems(options, DialogInterface.OnClickListener { dialog, which ->
@@ -260,13 +264,27 @@ class MyForestActivity : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClick
                                     })
                                 alert.show()
                             }
+                            4 -> { //Share
+                                val databaseHandler: DatabaseHandler = DatabaseHandler(requireContext())
+                                var tree =  databaseHandler.viewTree(markerId)
+                                Sharing().shareImageandText(tree, requireContext())
+                            }
+                            5 -> { // identify
+                                val databaseHandler: DatabaseHandler = DatabaseHandler(requireContext())
+                                var tree =  databaseHandler.viewTree(markerId)
+                                if (tree == null || tree.Photo == null){
+                                    Toast.makeText(
+                                        this.requireContext(),
+                                        "Your tree have no photo",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                else
+                                    Sharing().recognizePlant(tree!!.Photo, requireContext())
+                            }
                         }
                     })
                 builder.show()
-        }
-        else
-        {
-            clickCount = 0
         }
         this.lastClickedId=markerId
         }
